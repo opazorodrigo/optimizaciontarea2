@@ -3,20 +3,20 @@
 <title>Método gráfico – Programación lineal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f7f9;--panel:#fff;--fg:#1a1d23;--mut:#667085;--bd:#d9dde3}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--panel:#fff;--fg:#17191d;--mut:#737b87;--bd:#e1e4e8;--accent:#2563eb}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--panel:#1e2127;--fg:#e8eaed;--mut:#9aa3af;--bd:#333a44}}
 :root[data-theme="dark"]{--bg:#14161a;--panel:#1e2127;--fg:#e8eaed;--mut:#9aa3af;--bd:#333a44}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main{max-width:1200px;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(320px,400px) 1fr;gap:16px}
-@media(max-width:900px){main{grid-template-columns:1fr}}
-h1{font-size:20px;margin:0 0 4px;grid-column:1/-1}
-.card{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:12px}
-.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:0 0 10px}
-.row{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-input,select{background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:6px;padding:5px 6px;font:inherit}
-input[type=number]{width:70px}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:24px;display:grid;grid-template-columns:minmax(340px,410px) 1fr;gap:20px}
+@media(max-width:900px){main{grid-template-columns:1fr}.row{flex-wrap:wrap}}
+h1{font-size:22px;font-weight:650;letter-spacing:-.02em;margin:0 0 2px;grid-column:1/-1}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 12px;font-weight:700}
+.row{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:nowrap}
+input,select{background:var(--panel);color:var(--fg);border:1px solid var(--bd);border-radius:7px;padding:6px 7px;font:inherit;outline:none;transition:border-color .15s,box-shadow .15s} input:focus,select:focus{border-color:#9bb8f5;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+input[type=number]{width:72px}
 select{width:58px}
 .sw{display:inline-block;width:28px;height:0;border-top:3px solid;vertical-align:middle;margin-right:8px}
 .leg div{margin:6px 0}
@@ -24,7 +24,7 @@ select{width:58px}
 .dot{display:inline-block;width:10px;height:10px;border:2px solid var(--fg);border-radius:50%;margin:0 12px 0 9px;vertical-align:middle}
 .msg{color:#dc2626;font-weight:600}
 .wrap{overflow-x:auto}
-canvas{width:100%;max-width:760px;height:auto;background:var(--panel);border:1px solid var(--bd);border-radius:10px}
+canvas{width:100%;max-width:760px;height:auto;background:var(--panel);border:1px solid var(--bd);border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.03)}
 .spin{display:inline-flex;align-items:stretch}
 .spin input{border-top-right-radius:0;border-bottom-right-radius:0;-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}
 .spin input::-webkit-outer-spin-button,.spin input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
@@ -32,9 +32,9 @@ canvas{width:100%;max-width:760px;height:auto;background:var(--panel);border:1px
 .ar button{flex:1;width:26px;padding:0;border:1px solid var(--bd);border-left:0;background:var(--bg);color:var(--fg);font-size:10px;line-height:1;cursor:pointer}
 .ar button:first-child{border-top-right-radius:6px}.ar button:last-child{border-bottom-right-radius:6px;border-top:0}
 .ar button:hover{background:var(--bd)}
-.btn{background:#2563eb;color:#fff;border:0;border-radius:6px;padding:7px 18px;font:inherit;font-weight:600;cursor:pointer}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:7px;padding:8px 18px;font:inherit;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.12);transition:filter .15s,transform .05s}
 .btn:hover{filter:brightness(1.12)}
-#report{overflow-x:auto}#report h2{margin:0 0 8px}#report h3{margin:16px 0 6px;font-size:15px}#report p{margin:6px 0}
+.graph-wrap{position:relative;max-width:760px}.point-tooltip{position:absolute;display:none;pointer-events:none;background:rgba(23,25,29,.94);color:#fff;padding:6px 9px;border-radius:7px;font-size:12px;line-height:1.25;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.14);z-index:5}.point-tooltip b{font-weight:650}#report{overflow-x:auto}#report h2{margin:0 0 8px}#report h3{margin:16px 0 6px;font-size:15px}#report p{margin:6px 0}
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{border-bottom:1px solid var(--bd);padding:6px 8px;text-align:left;white-space:nowrap}
 th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
@@ -55,7 +55,7 @@ tr.opt{background:rgba(234,179,8,.16)}
   </div>
   <div class="card leg"><h2>Leyenda</h2><div id="legend"></div></div>
 </section>
-<section class="wrap"><canvas id="cv" width="760" height="680"></canvas>
+<section class="wrap"><div class="graph-wrap"><canvas id="cv" width="760" height="680"></canvas><div id="tooltip" class="point-tooltip"></div></div>
 <div id="report" class="card" style="margin-top:12px;max-width:760px"></div></section>
 </main>
 <script>
@@ -147,7 +147,7 @@ function draw(){
 let sol=null,last=null;
 const star=(g,x,y,R,r)=>{g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,q=i%2?r:R;g.lineTo(x+q*Math.cos(a),y+q*Math.sin(a));}g.closePath();};
 const isAct=(p,l)=>Math.abs(l.a*p.x+l.b*p.y-l.c)<1e-6*(1+Math.abs(l.c));
-// Multiplicadores: L = Z − Σ μᵢ(aᵢx + bᵢy − cᵢ)  ⇒  ∇Z = Σ μᵢ·(aᵢ,bᵢ)
+// Multiplicadores: L = Z − Σ λᵢ(aᵢx + bᵢy − cᵢ)  ⇒  ∇Z = Σ λᵢ·(aᵢ,bᵢ)
 function lagrange(p,L,fa,fb,mode){
  const idx=[];L.forEach((l,i)=>{if(isAct(p,l))idx.push(i)});
  let pick=null;
@@ -177,17 +177,17 @@ function report(s){
  s.V.forEach((p,i)=>{h+=`<tr class="${isO(p)?'opt':''}"><td>V${i+1}${isO(p)?' ★':''}</td><td>(${fmt(p.x)}, ${fmt(p.y)})</td><td>${s.base.filter(l=>isAct(p,l)).map(l=>l.name).join(', ')}</td><td>${fmt(z(p))}</td></tr>`});
  h+='</table>';
  if(s.unb)h+='<p class="mut">El dominio es no acotado.</p>';
- if(!sol)h+='<p class="mut">Presiona «Resolver» para identificar el vértice óptimo y calcular sus multiplicadores de Lagrange.</p>';
+ if(!sol)h+='<p class="mut">Presiona «Resolver» para identificar el vértice óptimo y calcular sus multiplicadores λ.</p>';
  else if(sol.unb)h+='<h3>Resultado</h3><p class="msg">El problema no tiene óptimo finito: la función objetivo mejora indefinidamente dentro del dominio (no acotado).</p>';
  else{
   const o=sol.pts[0],n=s.V.findIndex(p=>Math.hypot(p.x-o.x,p.y-o.y)<1e-6)+1;
   h+=`<h3>★ Vértice óptimo</h3><p>V${n} = (${fmt(o.x)}, ${fmt(o.y)}) &nbsp;·&nbsp; <b>Z* = ${fmt(sol.zopt)}</b> (${nm.toLowerCase()})</p>`;
-  if(sol.pts.length>1)h+=`<p class="mut">Hay óptimos alternativos (${sol.pts.map(p=>'V'+(s.V.findIndex(q=>q===p)+1)).join(', ')}): toda la arista que los une es óptima. Los multiplicadores corresponden a V${n}.</p>`;
-  h+=`<p class="mut">Lagrangiano: L = Z − Σ μᵢ(aᵢx + bᵢy − cᵢ), con ∇Z = (${fmt(s.fa)}, ${fmt(s.fb)}) = Σ μᵢ·(aᵢ, bᵢ). Las restricciones inactivas tienen μ = 0. Cada μᵢ indica cuánto varía Z* por cada unidad que aumenta cᵢ.</p>`;
-  h+='<table><tr><th>Restricción</th><th>Ecuación</th><th>Estado</th><th>Multiplicador μ</th></tr>';
+  if(sol.pts.length>1)h+=`<p class="mut">Hay óptimos alternativos (${sol.pts.map(p=>'V'+(s.V.findIndex(q=>q===p)+1)).join(', ')}): toda la arista que los une es óptima. Los multiplicadores λ corresponden a V${n}.</p>`;
+  h+=`<p class="mut">Lagrangiano: L = Z − Σ λᵢ(aᵢx + bᵢy − cᵢ), con ∇Z = (${fmt(s.fa)}, ${fmt(s.fb)}) = Σ λᵢ·(aᵢ, bᵢ). Las restricciones inactivas tienen λ = 0. Cada λᵢ indica cuánto varía Z* por cada unidad que aumenta cᵢ.</p>`;
+  h+='<table><tr><th>Restricción</th><th>Ecuación</th><th>Estado</th><th>Multiplicador λ</th></tr>';
   s.base.forEach((l,i)=>{h+=`<tr><td>${l.name}</td><td>${eqn(l.a,l.b,REL[l.t],l.c)}</td><td>${isAct(o,l)?'activa':'inactiva'}</td><td>${fmt(sol.lag.mu[i])}</td></tr>`});
   h+='</table>';
-  if(sol.lag.deg)h+='<p class="mut">Vértice degenerado (más de dos restricciones activas): los multiplicadores no son únicos; se muestra un conjunto válido.</p>';
+  if(sol.lag.deg)h+='<p class="mut">Vértice degenerado (más de dos restricciones activas): los multiplicadores λ no son únicos; se muestra un conjunto válido.</p>';
  }
  box.innerHTML=h;
 }

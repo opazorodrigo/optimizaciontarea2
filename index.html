@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
-<title>Método gráfico – Problema lineal</title>
+<title>Método gráfico – Programación lineal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--panel:#fff;--fg:#17191d;--mut:#737b87;--bd:#e1e4e8;--accent:#2563eb}
@@ -40,6 +40,10 @@ th,td{border-bottom:1px solid var(--bd);padding:6px 8px;text-align:left;white-sp
 th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 tr.opt{background:rgba(234,179,8,.16)}
 .mut{color:var(--mut);font-size:13px}
+.overlay{position:absolute;top:62px;right:62px;margin:0;padding:10px 12px;max-width:300px;font-size:12px;z-index:4;pointer-events:none;opacity:.95}
+.overlay h2{margin-bottom:6px}
+.overlay div{margin:3px 0}
+@media(max-width:640px){.overlay{position:static;max-width:none;margin-top:10px;pointer-events:auto}}
 #cons{overflow-x:auto;padding-bottom:2px}
 .crow{flex-wrap:nowrap!important;gap:5px;white-space:nowrap}
 .crow input[type=number]{width:54px}
@@ -52,7 +56,7 @@ tr.opt{background:rgba(234,179,8,.16)}
 .btn2:disabled{opacity:.45;cursor:not-allowed}
 </style></head><body>
 <main>
-<h1>Método gráfico – Problema lineal</h1>
+<h1>Método gráfico – Programación lineal</h1>
 <section>
   <div class="card"><h2>Función objetivo</h2>
     <div class="row"><select id="mode" style="width:auto"><option value="max">Maximizar</option><option value="min">Minimizar</option></select> Z = <input type="number" step="any" id="fa" value="3"> x + <input type="number" step="any" id="fb" value="2"> y</div>
@@ -64,9 +68,9 @@ tr.opt{background:rgba(234,179,8,.16)}
     <div class="row"><button type="button" id="addc" class="btn2">+ Agregar restricción</button></div>
     <div class="mut">x ≥ 0 e y ≥ 0 se consideran siempre. Una fila con ambos coeficientes en 0 se ignora.</div>
   </div>
-  <div class="card leg"><h2>Leyenda</h2><div id="legend"></div></div>
 </section>
-<section class="wrap"><div class="graph-wrap"><canvas id="cv" width="760" height="680"></canvas><div id="tooltip" class="point-tooltip"></div></div>
+<section class="wrap"><div class="graph-wrap"><canvas id="cv" width="760" height="680"></canvas><div id="tooltip" class="point-tooltip"></div>
+<div class="card leg overlay"><h2>Leyenda</h2><div id="legend"></div></div></div>
 <div id="report" class="card" style="margin-top:12px;max-width:760px"></div></section>
 </main>
 <script>
@@ -172,10 +176,10 @@ function lagrange(p,L,fa,fb,mode){
  for(let x=0;x<idx.length&&!(pick&&pick.ok);x++)for(let y=x+1;y<idx.length&&!(pick&&pick.ok);y++){
   const l=L[idx[x]],m=L[idx[y]],d=l.a*m.b-m.a*l.b;if(Math.abs(d)<1e-9)continue;
   const u=(fa*m.b-m.a*fb)/d,w=(l.a*fb-fa*l.b)/d;
-  const okv=[[l,u],[m,w]].every(([q,mu])=>q.t==='eq'||(((q.t==='ge')===(mode==='min'))?mu>=-1e-9:mu<=1e-9));
+  const okv=[[l,u],[m,w]].every(([q,lam])=>q.t==='eq'||(((q.t==='ge')===(mode==='min'))?lam>=-1e-9:lam<=1e-9));
   if(!pick||okv)pick={i:idx[x],j:idx[y],u,w,ok:okv};}
- const mu=L.map(()=>0);if(pick){mu[pick.i]=pick.u;mu[pick.j]=pick.w;}
- return{mu,deg:idx.length>2};
+ const lam=L.map(()=>0);if(pick){lam[pick.i]=pick.u;lam[pick.j]=pick.w;}
+ return{lam,deg:idx.length>2};
 }
 function solve(){
  const s=last;if(!s||!s.V.length)return;
@@ -201,9 +205,14 @@ function report(s){
   const o=sol.pts[0],n=s.V.findIndex(p=>Math.hypot(p.x-o.x,p.y-o.y)<1e-6)+1;
   h+=`<h3>★ Vértice óptimo</h3><p>V${n} = (${fmt(o.x)}, ${fmt(o.y)}) &nbsp;·&nbsp; <b>Z* = ${fmt(sol.zopt)}</b> (${nm.toLowerCase()})</p>`;
   if(sol.pts.length>1)h+=`<p class="mut">Hay óptimos alternativos (${sol.pts.map(p=>'V'+(s.V.findIndex(q=>q===p)+1)).join(', ')}): toda la arista que los une es óptima. Los multiplicadores λ corresponden a V${n}.</p>`;
-  h+=`<p class="mut">Lagrangiano: L = Z − Σ λᵢ(aᵢx + bᵢy − cᵢ), con ∇Z = (${fmt(s.fa)}, ${fmt(s.fb)}) = Σ λᵢ·(aᵢ, bᵢ). Las restricciones inactivas tienen λ = 0. Cada λᵢ indica cuánto varía Z* por cada unidad que aumenta cᵢ.</p>`;
+  const sb=l=>l.name==='x ≥ 0'?'x':l.name==='y ≥ 0'?'y':l.name.slice(1);
+  const lhs=l=>{let q=term(l.a,'x',true);q+=term(l.b,'y',!q);return q||'0'};
+  const ex=l=>lhs(l)+(l.c?(l.c>0?' − ':' + ')+fmt(Math.abs(l.c)):'');
+  const Lg=s.base.map(l=>` − λ<sub>${sb(l)}</sub>(${ex(l)})`).join('');
+  const gr=s.base.filter(l=>isAct(o,l)).map(l=>`λ<sub>${sb(l)}</sub>(${fmt(l.a)}, ${fmt(l.b)})`).join(' + ');
+  h+=`<p class="mut">Lagrangiano: L(x, y, λ) = ${t||'0'}${Lg}</p><p class="mut">En el óptimo: ∇Z = (${fmt(s.fa)}, ${fmt(s.fb)}) = ${gr||'0'}. Las restricciones inactivas tienen λ = 0. Cada λ indica cuánto varía Z* por cada unidad que aumenta el lado derecho de su restricción.</p>`;
   h+='<table><tr><th>Restricción</th><th>Ecuación</th><th>Estado</th><th>Multiplicador λ</th></tr>';
-  s.base.forEach((l,i)=>{h+=`<tr><td>${l.name}</td><td>${eqn(l.a,l.b,REL[l.t],l.c)}</td><td>${isAct(o,l)?'activa':'inactiva'}</td><td>${fmt(sol.lag.mu[i])}</td></tr>`});
+  s.base.forEach((l,i)=>{h+=`<tr><td>${l.name}</td><td>${eqn(l.a,l.b,REL[l.t],l.c)}</td><td>${isAct(o,l)?'activa':'inactiva'}</td><td>λ<sub>${sb(l)}</sub> = ${fmt(sol.lag.lam[i])}</td></tr>`});
   h+='</table>';
   if(sol.lag.deg)h+='<p class="mut">Vértice degenerado (más de dos restricciones activas): los multiplicadores λ no son únicos; se muestra un conjunto válido.</p>';
  }

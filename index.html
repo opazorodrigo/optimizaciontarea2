@@ -185,7 +185,8 @@ function solve(){
  const s=last;if(!s||!s.V.length)return;
  const z=p=>s.fa*p.x+s.fb*p.y,k=s.mode==='max'?1:-1,best=Math.max(...s.V.map(p=>k*z(p))),tol=1e-7*(1+Math.abs(best));
  const opts=s.V.filter(p=>k*z(p)>=best-tol);
- if(s.poly.some(p=>!s.real(p)&&k*z(p)>best+tol)){sol={sig:s.sig,unb:true,pts:[]};}
+ if(!s.fa&&!s.fb){sol={sig:s.sig,nullfo:true,pts:[]};}
+ else if(s.poly.some(p=>!s.real(p)&&k*z(p)>best+tol)){sol={sig:s.sig,unb:true,pts:[]};}
  else{const zo=z(opts[0]);sol={sig:s.sig,pts:opts,zopt:zo,lag:lagrange(opts[0],s.base,s.fa,s.fb,s.mode)};$('fz').value=+zo.toFixed(6);}
  draw();
 }
@@ -200,6 +201,7 @@ function report(s){
  h+='</table>';
  if(s.unb)h+='<p class="mut">El dominio es no acotado.</p>';
  if(!sol)h+='<p class="mut">Presiona «Resolver» para identificar el vértice óptimo y calcular sus multiplicadores λ.</p>';
+ else if(sol.nullfo)h+='<h3>Resultado</h3><p>La función objetivo es nula (Z = 0x + 0y): Z = 0 en todos los puntos factibles. Todos los puntos del dominio son óptimos, por lo que no existe un único vértice óptimo. No se dibuja la curva de nivel ni se calculan los multiplicadores λ.</p>';
  else if(sol.unb)h+='<h3>Resultado</h3><p class="msg">El problema no tiene óptimo finito: la función objetivo mejora indefinidamente dentro del dominio (no acotado).</p>';
  else{
   const o=sol.pts[0],n=s.V.findIndex(p=>Math.hypot(p.x-o.x,p.y-o.y)<1e-6)+1;
